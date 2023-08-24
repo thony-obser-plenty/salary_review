@@ -1,76 +1,97 @@
 <?php
 
-// Employee class represents an employee in a company
-class Employee {
-    private $id;
-    private $name;
-    private $position;
+// I check for:
+// Readability
+// Understandability
+// Performance
+// Error handling
+// Bugs & Logical flaws
+// DRY-Principle -> Don't write redundant code
+// SOP-Principle -> Each thing does its own thing
+// KISS-Principle -> Try to keep it simple
+// SOLID-Principle -> https://en.wikipedia.org/wiki/SOLID
+// POLA-Principle -> Code should work as one would expect
+// YAGNI-Principle -> Don't code stuff you might not need
 
-    public function __construct($id, $name, $position) {
+// Added employee interface for
+// -> Type safety.
+// -> Polymorphism and modularity.
+interface EmployeeInterface {
+    public function getId(): int;
+    public function getName(): string;
+}
+
+// Added salary interface because salary class violated several SOLID-Principles
+// -> Single responsibility principle. Salary class did not only calculate but also check what type of employee it was
+// -> Open/closed principle. Salary class was not open for extension. If we wanted to add a new employee we would have to change the salary class
+interface SalaryInterface {
+    public function calculateSalary(): float;
+}
+
+// implemented employee interface
+// Removed position property because it was redundant
+// Added types
+class Employee implements EmployeeInterface {
+    private int $id;
+    private string $name;
+
+    public function __construct($id, $name) {
         $this->id = $id;
         $this->name = $name;
-        $this->position = $position;
     }
 
-    public function getId() {
+    public function getId(): int{
         return $this->id;
     }
 
-    public function getName() {
+    public function getName(): string {
         return $this->name;
     }
+}
 
-    public function getPosition() {
-        return $this->position;
+// Added manager subclass
+// Subclasses implement salary interface
+class Manager extends Employee implements SalaryInterface {
+    public function __construct($id, $name) {
+        parent::__construct($id, $name);
+    }
+
+    public function calculateSalary(): float
+    {
+        return $this->getId() * 5000;
     }
 }
 
-// SalaryCalculator class calculates the salary of employees
-class SalaryCalculator {
-    private $employees = [];
-
-    public function addEmployee(Employee $employee) {
-        $this->employees[] = $employee;
+// Added developer subclass
+// Subclasses implement salary interface
+class Developer extends Employee implements SalaryInterface {
+    public function __construct($id, $name) {
+        parent::__construct($id, $name);
     }
 
-    public function calculateSalary() {
-        $salaries = [];
-        foreach ($this->employees as $employee) {
-            if ($employee->getPosition() === 'Manager') {
-                $salaries[] = $this->calculateManagerSalary($employee);
-            } elseif ($employee->getPosition() === 'Developer') {
-                $salaries[] = $this->calculateDeveloperSalary($employee);
-            } else {
-                $salaries[] = $this->calculateInternSalary($employee);
-            }
-        }
-        return $salaries;
-    }
-
-    private function calculateManagerSalary($employee) {
-        // Complex calculation for manager salary
-        return $employee->getId() * 5000;
-    }
-
-    private function calculateDeveloperSalary($employee) {
-        // Complex calculation for developer salary
-        return $employee->getId() * 3000;
-    }
-
-    private function calculateInternSalary($employee) {
-        // Complex calculation for intern salary
-        return $employee->getId() * 1000;
+    public function calculateSalary(): float
+    {
+        return $this->getId() * 3000;
     }
 }
 
-$employee1 = new Employee(1, 'John Doe', 'Manager');
-$employee2 = new Employee(2, 'Jane Smith', 'Developer');
-$employee3 = new Employee(3, 'Mike Johnson', 'Intern');
+// Added intern subclass
+// Subclasses implement salary interface
+class Intern extends Employee implements SalaryInterface {
+    public function __construct($id, $name) {
+        parent::__construct($id, $name);
+    }
 
-$calculator = new SalaryCalculator();
-$calculator->addEmployee($employee1);
-$calculator->addEmployee($employee2);
-$calculator->addEmployee($employee3);
+    public function calculateSalary(): float
+    {
+        return $this->getId() * 1000;
+    }
+}
 
-$salaries = $calculator->calculateSalary();
+// Removed SalaryCalculator class because it was redundant. In a more complex scenario it would be useful to outsource the calculation to a separate class.
+$salaries = [];
+$salaries[] = (new Manager(1, 'John Doe'))->calculateSalary();
+$salaries[] = (new Developer(2, 'Jane Smith'))->calculateSalary();
+$salaries[] = (new Intern(3, 'Mike Johnson'))->calculateSalary();
+
 print_r($salaries);
